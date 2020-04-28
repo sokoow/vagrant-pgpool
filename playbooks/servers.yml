@@ -1,0 +1,17 @@
+---
+
+- hosts: postgresqls
+  become: true
+  roles:
+    - role: ansible-role-postgresql
+
+- hosts: pgpools
+  become: true
+  roles:
+    - role: ansible-role-pgpool
+
+- hosts: [postgresqls, pgpools]
+  become: true
+  roles:
+    - role: ansible-role-firewall
+    - role: ansible-role-ssh

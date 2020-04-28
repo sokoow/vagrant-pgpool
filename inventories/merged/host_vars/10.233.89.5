@@ -1,0 +1,35 @@
+---
+
+# - PostgreSQL Replication -
+postgres_replication_standby_mode: true
+postgres_replication_host: "10.233.89.3"
+
+# - PGPool-II backend hosts -
+pgpool2_backend_hosts: [ "10.233.89.3", "10.233.89.5" ]
+
+# - PGPool-II WatchDog Configuration -
+pgpool2_wd_hostname: "10.233.89.5"
+pgpool2_heartbeat_destinations: [ "10.233.89.3" ]
+pgpool2_other_pgpool_hostnames: [ "10.233.89.3" ]
+
+# - SSH Configuration -
+ssh_accounts:
+  - user:   "{{ pgpool2_user }}"
+    ssh_keys:
+      - name:    id_rsa
+        private: "{{ lookup('file', inventory_dir ~ '/ssh_keys/id_rsa_5')     }}"
+        public:  "{{ lookup('file', inventory_dir ~ '/ssh_keys/id_rsa_5.pub') }}"
+  - user:   postgres
+    authorized_keys:
+      - "{{ lookup('file', inventory_dir ~ '/ssh_keys/id_rsa_3.pub') }}"
+
+# - Firewall Access -
+allow_services:
+  - service: postgresql
+    source: "10.233.89.3/32"
+  - service: postgresql
+    source: "10.233.89.209/32"
+  - service: pgpool-client
+    source: "0.0.0.0/0"
+  - service: pgpool-cluster
+    source: "10.233.89.3/32"

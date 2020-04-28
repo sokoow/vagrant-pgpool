@@ -1,0 +1,104 @@
+---
+
+# - Shared PostgreSQL Information -
+postgres_password: postgres
+postgres_bin_dir: /usr/pgsql-11/bin
+postgres_data_dir: /var/lib/pgsql/11/data
+
+# - PostgreSQL Replication -
+postgres_replication_user: replicator
+postgres_replication_password: replication+distributed
+postgres_replication_slot: replica_distributed
+
+# - PostgreSQL Configuration -
+postgresql_config:
+  - listen_addresses: '*'
+  - max_connections: 3000
+  - superuser_reserved_connections: 3
+  - shared_buffers: 2GB
+  - work_mem: 32MB
+  - maintenance_work_mem: 320MB
+  - huge_pages: off
+  - effective_cache_size: 6GB
+  - shared_preload_libraries: 'pg_stat_statements'
+  - track_io_timing: on
+  - track_functions: pl
+  - wal_level: replica
+  - max_wal_senders: 10
+  - synchronous_commit: on
+  - wal_keep_segments: 130
+  - checkpoint_timeout: '15 min'
+  - checkpoint_completion_target: 0.9
+  - max_wal_size: '1024 MB'
+  - min_wal_size: '512 MB'
+  - archive_mode: on
+  - archive_command: '/bin/true'
+  - wal_compression: on
+  - wal_buffers: -1
+  - wal_writer_delay: 200ms
+  - wal_writer_flush_after: 1MB
+  - bgwriter_delay: 200ms
+  - bgwriter_lru_maxpages: 100
+  - bgwriter_lru_multiplier: 2.0
+  - bgwriter_flush_after: 0
+  - max_worker_processes: 2
+  - max_parallel_workers_per_gather: 1
+  - max_parallel_maintenance_workers: 1
+  - max_parallel_workers: 2
+  - parallel_leader_participation: on
+  - enable_partitionwise_join: on
+  - enable_partitionwise_aggregate: on
+  - jit: on
+  - jit_above_cost: 100000
+  - jit_optimize_above_cost: 500000
+  - jit_inline_above_cost: 500000
+  - max_replication_slots: 5
+  - hot_standby: on
+  - hot_standby_feedback: on
+  - include_dir: "conf.d"
+
+# - PostgreSQL Data -
+postgresql_users:
+  - name: postgres
+    password: "{{ postgres_password }}"
+  - name: "{{ postgres_replication_user }}"
+    password: "{{ postgres_replication_password }}"
+    attributes: [ 'LOGIN', 'REPLICATION' ]
+
+# - PostgreSQL Host Based Authentication -
+postgresql_hba_config:
+  - local   all             postgres                                         peer
+  - host    all             all                      10.233.89.11/32         md5
+  - host    all             all                      10.233.89.19/32         md5
+  - host    all             all                      10.233.89.43/32         md5
+  - host    all             all                      10.233.89.47/32         md5
+  - host    all             all                      10.233.89.49/32         md5
+  - host    all             all                      10.233.89.211/32        md5
+  - host    replication     {{ postgres_replication_user }}               10.233.89.11/32         md5
+  - host    replication     {{ postgres_replication_user }}               10.233.89.19/32         md5
+
+
+# - PGPool-II Configuration -
+pgpool2_user: pgpool
+pgpool2_group: pgpool
+
+pgpool2_health_check_timeout: 5
+pgpool2_health_check_period: 3
+pgpool2_health_check_max_retries: 2
+pgpool2_search_primary_node_timeout: 5
+pgpool2_wd_interval: 3
+
+# - PGPool-II Log Configuration -
+pgpool2_syslog_facility: LOCAL1
+
+# - PGPool-II WatchDog Configuration -
+pgpool2_delegate_IP: "10.233.89.211"
+pgpool2_heartbeat_device: eth1
+
+# - PGPool-II Host Based Authentication -
+pgpool2_hba_config:
+  - host    all             all             0.0.0.0/0               md5
+  - host    all             all             10.233.89.211/32        md5
+
+# - Firewall Access -
+firewalld_zone: vappdp
